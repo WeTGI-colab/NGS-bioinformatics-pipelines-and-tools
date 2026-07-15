@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>NGS Bioinformatics — workflows</title>
+<title>WGLS Bioinformatics — workflows</title>
 <style>
   :root{
     --ink:#1a1a2e; --muted:#5b6470; --line:#c9d2de; --bg:#fff;
@@ -110,7 +110,7 @@
 </style>
 </head>
 <body>
-<h1>NGS Bioinformatics — workflows <small>versions &amp; input files · click a file to trace every step that uses it</small></h1>
+<h1>WGLS Bioinformatics — workflows <small>versions &amp; input files · click a file to trace every step that uses it</small></h1>
 
 <div class="pending"><span class="dotr"></span>Pending review — not yet validated<span class="dotr"></span></div>
 
@@ -550,6 +550,7 @@
     "QM_trends_tool":"Tracks quality-control trends over time across runs, samples and variants."
   };
   const TIPS_FILE = [
+    ["3 VCFs","The three kinds of variant results uploaded for interpretation: SNV = small single-base changes and small insertions/deletions (from HaplotypeCaller); Manta (SV) = large structural rearrangements; ExomeDepth (CNV) = gains or losses of whole genes (copy-number)."],
     ["GIABv1mask","The human reference genome — the 'map' every read is compared against."],
     ["known_indels","Catalogue of known insertions/deletions, used to improve alignment and calibration."],
     ["Mills","Catalogue of known insertions/deletions, used to improve alignment and calibration."],
