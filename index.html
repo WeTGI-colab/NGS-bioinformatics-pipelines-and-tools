@@ -107,6 +107,11 @@
       pointer-events:none;display:none}
   .prog,.scard{cursor:help}
   .hastip{cursor:help}
+  a.repolink{color:inherit;text-decoration:none}
+  a.repolink:hover{text-decoration:underline}
+  a.repolink .ext{color:#2496ED;font-size:9px;margin-left:3px;vertical-align:super}
+  a.filelink{color:inherit;text-decoration:none;border-bottom:1px dotted #2496ED}
+  a.filelink:hover{color:#2496ED}
 </style>
 </head>
 <body>
@@ -607,6 +612,71 @@
   });
   document.querySelectorAll('.file,.filelist').forEach(f=>{
     const tp=fileTip(f.textContent); if(tp) attach(f,tp);
+  });
+
+  /* ===== repo & file links (private repos: open for org members) ===== */
+  const GH="https://github.com/";
+  const TOOL_REPO={
+    "Custom-SoftCliping-app":"cas-wrgl/Custom-SoftCliping-app",
+    "reduce_reads_in_amplicons":"cas-wrgl/reduce_reads_in_amplicons",
+    "Amplicon_filter_for_SSrep":"cas-wrgl/Amplicon_filter_for_SSrep-",
+    "calculate-coverage":"cas-wrgl/calculate-coverage",
+    "False-Positive-Hunter":"cas-wrgl/False-Positive-Hunter",
+    "Genotyping-report-generator":"cas-wrgl/Genotyping-report-generator",
+    "RACP_bias_read_detector":"cas-wrgl/RACP_bias_read_detector",
+    "bcl2fq → bcl-convert":"cas-wrgl/bcl2fq",
+    "samplesheet":"cas-wrgl/samplesheet",
+    "cas-WRGL-sarek (fork nf-core/sarek)":"cas-wrgl/cas-WRGL-sarek",
+    "ExomeDepth (CNV)":"cas-wrgl/ExomeDepth",
+    "CNV_Panel_Formatting":"cas-wrgl/CNV_Panel_Formatting",
+    "demographics_identifier":"cas-wrgl/demographics_identifier",
+    "Congenica_Upload_Client":"cas-wrgl/Congenica_Upload_Client",
+    "Congenica-Interpreter-API":"cas-wrgl/Congenica-Interpreter-API",
+    "congenica2clinvar":"cas-wrgl/congenica2clinvar",
+    "clinvar-upload":"casglh/clinvar-upload",
+    "panhaem-cov":"cas-wrgl/panhaem-cov",
+    "MLPA_facilitator_API":"cas-wrgl/MLPA_facilitator_API",
+    "SpliceAI-lookup_Docker":"cas-wrgl/SpliceAI-lookup_Docker",
+    "netcopy":"cas-wrgl/netcopy",
+    "sysad":"cas-wrgl/sysad",
+    "QM_trends_tool":"cas-wrgl/QM_trends_tool",
+    "InterOp (Illumina)":"cas-wrgl/sysad"
+  };
+  const WRGL_BASE=GH+"cas-wrgl/WRGLpipeline-files/blob/main/";
+  const WRGL_FILES=new Set(["low_complexity_regions_w192_t50_filtered.bed","Amplicon_transcript_IDs_list",
+    "Geno_amplicons_V5.0.3.bed","Geno_primers_V5.0.3.bed","RACP1_amplicons_v1.0.bed","RACP1_primers_v1.0.bed",
+    "SSrep_amplicon_v4.5.bed","SSrep_primers_v4.5.bed","PGX_amplicons_v2.0.bed","PGX_primers_v2.0.bed",
+    "WRGL5_hg19_v02.bed_hg38lift_padded.bed","WRGL5_hg19_v02.bed_hg38lift.bed","TYR_haplotype_interval_hg38lift.bed",
+    "WRGL5_hg38_v01_ExomeDepth.bed","HTSFAmplicons_hg37_hg38lift.bed","WRGL5_genes_and_subpanels_minimumcoverage_v1.1.csv",
+    "SSrep_ROI_for_APIv4.5.bed","preferred_transcript_dataset_for_spliceai_v1.tsv"]);
+
+  function linkName(el,url){
+    const txt=el.textContent;
+    const a=document.createElement('a'); a.className='repolink'; a.href=url; a.target='_blank'; a.rel='noopener';
+    a.textContent=txt;
+    const ext=document.createElement('span'); ext.className='ext'; ext.textContent='↗'; a.appendChild(ext);
+    a.addEventListener('click',e=>e.stopPropagation());
+    el.textContent=''; el.appendChild(a);
+  }
+  document.querySelectorAll('.prog .pname .txt').forEach(t=>{
+    const repo=TOOL_REPO[t.textContent.trim()]; if(repo) linkName(t, GH+repo);
+  });
+  document.querySelectorAll('.scard h3').forEach(h=>{
+    const repo=TOOL_REPO[h.textContent.trim()]; if(!repo) return;
+    const tn=[...h.childNodes].find(n=>n.nodeType===3 && n.textContent.trim());
+    if(!tn) return;
+    const a=document.createElement('a'); a.className='repolink'; a.href=GH+repo; a.target='_blank'; a.rel='noopener';
+    a.textContent=tn.textContent.trim();
+    const ext=document.createElement('span'); ext.className='ext'; ext.textContent='↗'; a.appendChild(ext);
+    h.replaceChild(a,tn);
+  });
+  document.querySelectorAll('.fn').forEach(fn=>{
+    const name=fn.textContent.trim();
+    if(WRGL_FILES.has(name)){
+      const a=document.createElement('a'); a.className='filelink'; a.href=WRGL_BASE+name; a.target='_blank'; a.rel='noopener';
+      a.textContent=name; a.addEventListener('click',e=>e.stopPropagation());
+      fn.textContent=''; fn.appendChild(a);
+    }
   });
 </script>
 </body>
