@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>WGLS Bioinformatics — workflows</title>
+<title>NGS Bioinformatics — workflows</title>
 <style>
   :root{
     --ink:#1a1a2e; --muted:#5b6470; --line:#c9d2de; --bg:#fff;
@@ -102,10 +102,15 @@
   .pending .dotr{width:13px;height:13px;border-radius:50%;background:#c0392b;display:inline-block;
            animation:blink 1.2s infinite}
   @keyframes blink{50%{opacity:.2}}
+  .tt{position:fixed;z-index:999;max-width:300px;background:#1a1a2e;color:#fff;font-size:12px;
+      line-height:1.4;padding:9px 12px;border-radius:8px;box-shadow:0 6px 22px rgba(0,0,0,.28);
+      pointer-events:none;display:none}
+  .prog,.scard{cursor:help}
+  .hastip{cursor:help}
 </style>
 </head>
 <body>
-<h1>WGLS Bioinformatics — workflows <small>versions &amp; input files · click a file to trace every step that uses it</small></h1>
+<h1>NGS Bioinformatics — workflows <small>versions &amp; input files · click a file to trace every step that uses it</small></h1>
 
 <div class="pending"><span class="dotr"></span>Pending review — not yet validated<span class="dotr"></span></div>
 
@@ -498,6 +503,99 @@
     pane.querySelectorAll('.hl').forEach(e=>e.classList.remove('hl'));
     if(!on)pane.querySelectorAll('[data-fn="'+fn+'"]').forEach(e=>e.classList.add('hl'));
   }));
+
+  /* ===== hover explanations (plain, for scientists) ===== */
+  const TIPS_PROG = {
+    "bcl2fq → bcl-convert":"Turns the sequencer's raw signal files into readable DNA sequences (FASTQ files).",
+    "samplesheet":"Reads the run's sample sheet and prepares the per-sample settings the analysis needs.",
+    "Picard FastqToSam":"Packages each sample's raw reads into a standard file, ready for analysis.",
+    "samtools":"General toolkit to read and organise sequencing files; here it counts and extracts reads.",
+    "SamToFastq → NGmerge":"For Genotyping only: merges the two paired reads covering the same DNA fragment into one, improving accuracy.",
+    "SamToFastq | bwa mem | MergeBamAlignment":"Aligns each read to its correct position on the human reference genome.",
+    "Custom-SoftCliping-app":"Trims the PCR primer sequence off the reads so primers don't create false variants.",
+    "reduce_reads_in_amplicons":"Caps very high read numbers per amplicon to speed up analysis without losing accuracy.",
+    "GATK3 IndelRealigner":"Re-aligns reads around insertions/deletions so those variants are detected correctly.",
+    "Amplicon_filter_for_SSrep":"SSrep only: keeps just the amplicons that have enough reads to be reliable.",
+    "calculate-coverage":"Measures how well each region is covered by reads (depth) and flags any gaps.",
+    "Pisces":"Detects the genetic variants — the differences from the reference genome — in each sample.",
+    "bcftools annotate":"Adds extra information and labels to the list of detected variants.",
+    "GATK VariantAnnotator (low-complexity)":"Flags variants sitting in tricky, repetitive regions where errors are common.",
+    "False-Positive-Hunter":"Removes variants that are likely sequencing artefacts, based on read support and quality.",
+    "VEP (Ensembl)":"Predicts the effect of each variant — which gene it hits and how it changes the protein.",
+    "GATK VariantsToTable":"Exports the variants into a simple table.",
+    "Genotyping-report-generator":"Builds the final results table for the clinical team (all test types).",
+    "RACP_bias_read_detector":"Quality check for strand bias — a sign of certain sequencing artefacts (all test types).",
+    "cas-WRGL-sarek (fork nf-core/sarek)":"Standard pipeline that aligns reads and calls small variants (SNVs) plus structural changes (Manta).",
+    "GATK VariantFiltration + bcftools view":"Removes low-quality variants and keeps only those inside the target regions.",
+    "verifyBamID — contamination":"Checks whether a sample is contaminated with DNA from another person.",
+    "TYR haplotype — HaplotypeCaller":"Dedicated variant calling for the TYR gene region.",
+    "ExomeDepth (CNV)":"Detects larger deletions or duplications of whole genes (copy-number changes).",
+    "CNV_Panel_Formatting":"Formats the copy-number results into the required table.",
+    "Manta VCF processing + bcftools":"Prepares the structural-variant results for upload to Congenica.",
+    "GATK ValidateVariants":"Sanity-checks that all the variant files are correctly formed.",
+    "coverage gaps — bedtools":"Lists regions with too little coverage — potential blind spots.",
+    "demographics_identifier":"Links the results to the correct patient and sample details.",
+    "VCFs ready for Congenica":"The final variant files, ready for clinical interpretation.",
+    "Congenica_Upload_Client":"Uploads the reads and variant files to the Congenica platform.",
+    "Congenica platform":"Web platform where scientists review and classify the variants.",
+    "Congenica-Interpreter-API":"Turns the Congenica output into a per-patient Excel report.",
+    "congenica2clinvar":"Collects finalised variant classifications from Congenica into a ClinVar submission table.",
+    "clinvar-upload":"Submits those classifications to the public ClinVar database.",
+    "ClinVar (NCBI)":"Public, worldwide database of variant classifications.",
+    "panhaem-cov":"Coverage quality check for the pan-haem (blood cancer) panel.",
+    "MLPA_facilitator_API":"Turns a GeneMarker MS-MLPA export into a spreadsheet for scientists.",
+    "SpliceAI-lookup_Docker":"On-demand tool to check whether a variant is predicted to affect splicing.",
+    "netcopy":"Copies run data from the working area to shared storage.",
+    "sysad":"Server administration and infrastructure — not a bioinformatics analysis tool.",
+    "QM_trends_tool":"Tracks quality-control trends over time across runs, samples and variants."
+  };
+  const TIPS_FILE = [
+    ["GIABv1mask","The human reference genome — the 'map' every read is compared against."],
+    ["known_indels","Catalogue of known insertions/deletions, used to improve alignment and calibration."],
+    ["Mills","Catalogue of known insertions/deletions, used to improve alignment and calibration."],
+    ["dbsnp138","Catalogue of known common variants (dbSNP), used during calling."],
+    ["1000G_phase1","Set of well-known common variants, used for calibration and QC."],
+    ["high-confidence","A curated set of common variants used to check for sample contamination."],
+    ["hg38lift_padded","The panel's target regions, slightly widened to catch edge variants."],
+    ["WRGL5_hg19_v02.bed_hg38lift.bed","The panel's exact target regions."],
+    ["interval_list","The panel's target regions in list form."],
+    ["TYR_haplotype","Coordinates of the TYR gene region."],
+    ["ExomeDepth.bed","Target regions used to detect copy-number changes."],
+    ["HTSFAmplicons","Amplicon coordinates used for coverage analysis."],
+    ["genes_and_subpanels","Gene and sub-panel list with the minimum coverage each must reach."],
+    ["SSrep_ROI","The SSrep regions of interest."],
+    ["low_complexity","Repetitive genome regions where sequencing errors are common."],
+    ["transcript","The preferred gene transcripts to report results against."],
+    ["primers BED","Coordinates of the PCR primers — used to trim primer sequence off the reads."],
+    ["amplicons BED","Coordinates of the amplicons (the target DNA regions) for this test."],
+    ["SampleSheet","The run's sample sheet from the sequencer."],
+    ["sapientia.cfg","Configuration and sample-to-panel mapping for the Congenica upload."],
+    ["CongenicaPatient","Per-patient variant export from Congenica."],
+    ["worklist","The lab worklist linking samples to patients and tests."],
+    ["recal.bam","The aligned, quality-calibrated reads for a sample."],
+    ["VEP cache","The Ensembl database VEP uses to annotate variants."],
+    ["raw BCL","The raw output files straight from the sequencer."],
+    ["ed_scores","The per-sample copy-number scores from ExomeDepth."]
+  ];
+  const tip=document.createElement('div'); tip.className='tt'; document.body.appendChild(tip);
+  function ttShow(e,txt){tip.textContent=txt; tip.style.display='block'; ttMove(e);}
+  function ttMove(e){const p=14; let x=e.clientX+p, y=e.clientY+p; const r=tip.getBoundingClientRect();
+    if(x+r.width>innerWidth) x=e.clientX-r.width-p; if(y+r.height>innerHeight) y=e.clientY-r.height-p;
+    tip.style.left=Math.max(4,x)+'px'; tip.style.top=Math.max(4,y)+'px';}
+  function ttHide(){tip.style.display='none';}
+  function attach(el,txt){el.classList.add('hastip');
+    el.addEventListener('mouseenter',e=>ttShow(e,txt));
+    el.addEventListener('mousemove',ttMove); el.addEventListener('mouseleave',ttHide);}
+  function fileTip(text){for(const [k,v] of TIPS_FILE){if(text.indexOf(k)!==-1) return v;} return null;}
+  document.querySelectorAll('.prog').forEach(p=>{
+    const t=p.querySelector('.txt'); if(!t) return; const tp=TIPS_PROG[t.textContent.trim()]; if(tp) attach(p,tp);
+  });
+  document.querySelectorAll('.scard h3').forEach(h=>{
+    const tp=TIPS_PROG[h.textContent.trim()]; if(tp) attach(h.parentElement,tp);
+  });
+  document.querySelectorAll('.file,.filelist').forEach(f=>{
+    const tp=fileTip(f.textContent); if(tp) attach(f,tp);
+  });
 </script>
 </body>
 </html>
