@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WGLS Bioinformatics — workflows</title>
+<style>
+  :root{
+    --ink:#1a1a2e; --muted:#5b6470; --line:#c9d2de; --bg:#fff;
+    --geno:#2f8f4e; --racp:#2f6db0; --ssrep:#d98a2b; --common:#8a93a0;
+    --core:#5b6470; --snv:#2f6db0; --cnv:#8e44ad; --sv:#2a9d8f; --qc:#b08900; --interp:#d0743a;
+    --shared:#c0392b; --panelbed:#8e44ad; --ref:#b7791f;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+       color:var(--ink);background:var(--bg);padding:20px 18px 60px;line-height:1.4}
+  h1{font-size:21px;margin:0 0 10px}
+  h1 small{font-size:13px;color:var(--muted);font-weight:400}
+  .sub{color:var(--muted);font-size:12.5px;max-width:920px;margin-bottom:12px}
+
+  .tabs{display:flex;gap:6px;border-bottom:2px solid var(--line);margin-bottom:18px;flex-wrap:wrap}
+  .tab{font-size:13.5px;font-weight:600;padding:9px 16px;border:none;background:none;cursor:pointer;
+       color:var(--muted);border-bottom:3px solid transparent;margin-bottom:-2px}
+  .tab:hover{color:var(--ink)}
+  .tab.active{color:var(--ink);border-bottom-color:#2496ED}
+  .pane{display:none}
+  .pane.active{display:block}
+
+  .legend{display:flex;flex-wrap:wrap;gap:8px;font-size:11.5px;margin-bottom:18px}
+  .legend span.it{display:inline-flex;align-items:center;gap:6px;padding:3px 9px;border-radius:20px;border:1px solid var(--line)}
+  .sw{width:20px;height:0;border-top:3px solid;display:inline-block;border-radius:2px}
+  .tag{display:inline-block;font-size:9.5px;font-weight:700;color:#fff;border-radius:4px;padding:1px 5px;letter-spacing:.3px}
+  .tag.g{background:var(--geno)} .tag.r{background:var(--racp)} .tag.s{background:var(--ssrep)} .tag.c{background:var(--common)}
+  .tag.core{background:var(--core)} .tag.snv{background:var(--snv)} .tag.cnv{background:var(--cnv)}
+  .tag.sv{background:var(--sv)} .tag.qc{background:var(--qc)} .tag.interp{background:var(--interp)}
+
+  .flow{max-width:1080px;margin:0 auto}
+  .row{display:grid;grid-template-columns:1fr 320px 1fr;align-items:center;margin:0}
+  .prog{grid-column:2;justify-self:center;width:320px;background:#fff;border:1.5px solid var(--line);
+        border-left:6px solid var(--common);border-radius:10px;padding:9px 12px;box-shadow:0 1px 3px rgba(20,30,50,.06)}
+  .prog.g{border-left-color:var(--geno)} .prog.r{border-left-color:var(--racp)}
+  .prog.s{border-left-color:var(--ssrep)} .prog.c{border-left-color:var(--common)}
+  .prog.core{border-left-color:var(--core)} .prog.snv{border-left-color:var(--snv)}
+  .prog.cnv{border-left-color:var(--cnv)} .prog.sv{border-left-color:var(--sv)}
+  .prog.qc{border-left-color:var(--qc)} .prog.interp{border-left-color:var(--interp)}
+  .prog .pname{font-weight:670;font-size:13.5px;display:flex;align-items:center;gap:7px}
+  .prog .pname .txt{flex:1}
+  .prog .pver{font-size:10px;color:#334;background:#eef2f8;border:1px solid #d6deea;padding:1px 7px;border-radius:20px;white-space:nowrap}
+  .prog .badges{margin-top:5px;display:flex;gap:4px;flex-wrap:wrap}
+  .prog .note{font-size:10.5px;color:var(--muted);margin-top:5px}
+  .prog .miss{color:var(--shared);font-weight:700;font-size:10.5px;margin-top:4px}
+  .whale{flex:0 0 auto;display:inline-flex}
+  .nf{flex:0 0 auto;font-size:9px;font-weight:800;color:#0dc09d;border:1.5px solid #0dc09d;border-radius:4px;padding:0 3px;letter-spacing:.3px}
+
+  .side{display:flex;flex-direction:column;gap:5px}
+  .side.left{grid-column:1;align-items:flex-end;padding-right:10px}
+  .side.right{grid-column:3;align-items:flex-start;padding-left:10px}
+  .file{font-size:11px;border-radius:7px;padding:4px 9px;border:1px solid;max-width:300px;
+        display:inline-flex;align-items:center;gap:6px;background:#fff;cursor:pointer}
+  .file .fn{font-family:ui-monospace,Menlo,monospace;font-size:10.5px}
+  .file.ref{border-color:var(--ref);background:#fffdf5}
+  .file.bed{border-color:var(--panelbed);background:#faf5fd}
+  .file.shared{border-color:var(--shared);background:#fdf3f2}
+  .file.plain{border-color:var(--line);background:#fafbfc;color:var(--muted);cursor:default}
+  .file .warn{color:var(--shared);font-weight:700}
+  .side.left .file::after{content:"→";color:var(--muted);margin-left:2px}
+  .side.right .file::before{content:"←";color:var(--muted);margin-right:2px}
+  .filelist{font-size:10.5px;border:1px solid var(--panelbed);background:#faf5fd;border-radius:7px;
+            padding:5px 10px;max-width:300px;cursor:pointer}
+  .filelist .hd{color:var(--muted);margin-bottom:3px}
+  .filelist .fn{display:block;font-family:ui-monospace,Menlo,monospace;font-size:10px;padding:1px 0;font-weight:600}
+  .filelist .fn.g{color:var(--geno)} .filelist .fn.r{color:var(--racp)} .filelist .fn.s{color:var(--ssrep)}
+
+  .down{grid-column:2;justify-self:center;color:#aab2bd;font-size:16px;line-height:1;margin:2px 0}
+  .stage{grid-column:1 / -1;text-align:center;font-size:11px;color:var(--muted);
+         border-top:1px dashed var(--line);margin:16px 0 8px;padding-top:7px;letter-spacing:.4px;text-transform:uppercase}
+  .hl{outline:3px solid #f0b429;outline-offset:1px;background:#fff8e6!important}
+  .footer{max-width:1080px;margin:26px auto 0;font-size:11.5px;color:var(--muted);border-top:1px solid var(--line);padding-top:12px}
+  .footer b{color:var(--ink)}
+
+  /* standalone cards */
+  .grid{display:flex;flex-wrap:wrap;gap:14px;max-width:1080px}
+  .scard{flex:1 1 300px;min-width:280px;max-width:340px;border:1.5px solid var(--line);border-radius:12px;padding:13px 15px;background:#fff}
+  .scard h3{margin:0 0 3px;font-size:14.5px;display:flex;align-items:center;gap:7px}
+  .scard .pver{font-size:10px;color:#334;background:#eef2f8;border:1px solid #d6deea;padding:1px 7px;border-radius:20px}
+  .scard .desc{font-size:12px;color:var(--ink);margin:6px 0}
+  .scard .io{font-size:11px;color:var(--muted);margin-top:6px}
+  .scard .io .fn{font-family:ui-monospace,Menlo,monospace;font-size:10.5px;color:#2b5d9b}
+  .miniflow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:6px 0 16px}
+  .miniflow .prog{width:auto;min-width:190px;justify-self:auto}
+  .miniflow .ar{color:var(--muted);font-size:16px}
+  .manual{background:#fff7ed;border:1px solid #f0c088;border-radius:9px;padding:10px 14px;max-width:1050px;margin-bottom:16px;font-size:12.5px}
+  .manual b{color:#b45309}
+  .runby{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:#0a6b3b;
+         background:#e8f6ee;border:1px solid #9ed6b6;border-radius:20px;padding:4px 12px;margin-bottom:14px}
+  .owner{font-size:11px;font-weight:600;color:#5a4a00;background:#fdf6e3;border:1px solid #e5d089;
+         border-radius:6px;padding:3px 8px;margin-top:8px;display:inline-block}
+</style>
+</head>
+<body>
+<h1>WGLS Bioinformatics — workflows <small>versions &amp; input files · click a file to trace every step that uses it</small></h1>
+
+<div class="tabs">
+  <button class="tab active" data-t="ap">AmpliconPipeline</button>
+  <button class="tab" data-t="nf">nf_panel</button>
+  <button class="tab" data-t="std">Standalone tools</button>
+</div>
+
+<!-- =================== TAB 1: AMPLICONPIPELINE =================== -->
+<section id="ap" class="pane active">
+  <div class="sub">AmpliconPipeline v1.0.29 — bash + SLURM + Apptainer, one job per sample.
+  Central column = programs (version); files enter at the step where they are used.
+  Assays: <span class="tag g">GENO</span> Genotyping · <span class="tag r">RACP</span> RACP1/2 · <span class="tag s">SSREP</span> SSrep · <span class="tag c">ALL</span> common.
+  <span class="whale wkey"></span> = Docker image.</div>
+  <div class="runby">▶ Run by: auto (the server)</div>
+  <div class="legend">
+    <span class="it"><i class="sw" style="border-color:var(--geno)"></i>Genotyping only</span>
+    <span class="it"><i class="sw" style="border-color:var(--racp)"></i>RACP only</span>
+    <span class="it"><i class="sw" style="border-color:var(--ssrep)"></i>SSrep only</span>
+    <span class="it"><i class="sw" style="border-color:var(--common)"></i>common</span>
+    <span class="it"><i class="file ref" style="padding:1px 6px">reference / known-sites</i></span>
+    <span class="it"><i class="file bed" style="padding:1px 6px">per-panel BED</i></span>
+    <span class="it"><i class="file shared" style="padding:1px 6px">⚠ shared with nf_panel</i></span>
+  </div>
+
+  <div class="flow">
+    <div class="stage">Common entry &amp; dispatch — shared with nf_panel</div>
+    <div class="row">
+      <div class="side left"><span class="file plain">raw BCL &amp; <span class="fn">SampleSheet.csv</span></span></div>
+      <div class="prog c dk"><div class="pname"><span class="txt">bcl2fq → bcl-convert</span><span class="pver">1.1.15 / 4.3.6</span></div>
+        <div class="badges"><span class="tag c">ALL</span></div><div class="note">BCL → FASTQ</div></div>
+    </div>
+    <div class="row"><div class="down">↓</div></div>
+    <div class="row">
+      <div class="prog c"><div class="pname"><span class="txt">samplesheet</span><span class="pver">1.0.1</span></div>
+        <div class="badges"><span class="tag c">ALL</span></div><div class="note">→ per-sample .vars (sets pipeline_name)</div></div>
+    </div>
+    <div class="row"><div class="down">↓</div></div>
+    <div class="row">
+      <div class="prog c dk"><div class="pname"><span class="txt">Picard FastqToSam</span><span class="pver">picard 2.26</span></div>
+        <div class="badges"><span class="tag c">ALL</span></div><div class="note">→ uBAM + input.csv → <b>dispatch</b> by pipeline_name</div></div>
+    </div>
+
+    <div class="stage">AmpliconPipeline — per sample</div>
+    <div class="row">
+      <div class="prog c dk"><div class="pname"><span class="txt">samtools</span><span class="pver">1.20</span></div>
+        <div class="badges"><span class="tag c">ALL</span></div><div class="note">read count / uBAM → fastq</div></div>
+    </div>
+    <div class="row"><div class="down">↓</div></div>
+    <div class="row">
+      <div class="prog g dk"><div class="pname"><span class="txt">SamToFastq → NGmerge</span><span class="pver">picard 3.1.1 · ngmerge</span></div>
+        <div class="badges"><span class="tag g">GENO</span></div>
+        <div class="note">stitch R1+R2 — <b>Genotyping only</b> (RACP/SSrep are Read1-only, skip this)</div></div>
+    </div>
+    <div class="row"><div class="down">↓</div></div>
+    <div class="row">
+      <div class="side left"><span class="file ref shared" data-fn="fasta"><span class="warn">⚠</span><span class="fn">Homo_sapiens_assembly38.GIABv1mask.fasta</span></span></div>
+      <div class="prog c dk"><div class="pname"><span class="txt">SamToFastq | bwa mem | MergeBamAlignment</span><span class="pver">bwa 0.7.18 · picard 3.1.1</span></div>
+        <div class="badges"><span class="tag c">ALL</span></div><div class="note">alignment to reference genome</div></div>
+    </div>
+    <div class="row"><div class="down">↓</div></div>
+    <div class="row">
+      <div class="prog c dk"><div class="pname"><span class="txt">Custom-SoftCliping-app</span><span class="pver">1.2</span></div>
+        <div class="badges"><span class="tag c">ALL</span></div><div class="note">soft-clip primers</div></div>
+      <div class="side right"><div class="filelist" data-fn="primers"><div class="hd">primers BED (per assay):</div>
+        <span class="fn g">Geno_primers_V5.0.3.bed</span><span class="fn r">RACP1_primers_v1.0.bed</span>
+        <span class="fn r">RACP2_primers_v1.0.bed</span><span class="fn s">SSrep_primers_v4.5.bed</span></div></div>
+    </div>
+    <div class="row"><div class="down">↓</div></div>
+    <div class="row">
+      <div class="prog c dk"><div class="pname"><span class="txt">reduce_reads_in_amplicons</span><span class="pver">1.0</span></div>
+        <div class="badges"><span class="tag c">ALL</span></div><div class="note">cap reads per amplicon (reduce TAT)</div></div>
+    </div>
+    <div class="row"><div class="down">↓</div></div>
+    <div class="row">
+      <div class="side left">
+        <span class="file ref shared" data-fn="indels"><span class="warn">⚠</span><span class="fn">Homo_sapiens_assembly38.known_indels.vcf.gz</span></span>
+        <span class="file ref shared" data-fn="indels"><span class="warn">⚠</span><span class="fn">Mills_and_1000G_gold_standard.indels.hg38.vcf.gz</span></span>
+      </div>
+      <div class="prog c dk"><div class="pname"><span class="txt">GATK3 IndelRealigner</span><span class="pver">gatk-3 3.8-0</span></div>
+        <div class="badges"><span class="tag c">ALL</span></div></div>
+      <div class="side right"><div class="filelist" data-fn="amplicons"><div class="hd">amplicons BED (per assay):</div>
+        <span class="fn g">Geno_amplicons_V5.0.3.bed</span><span class="fn r">RACP1_amplicons_v1.0.bed</span>
+        <span class="fn s">SSrep_amplicon_v4.5.bed</span></div></div>
+    </div>
+    <div class="row"><div class="down">↓</div></div>
+    <div class="row">
+      <div class="prog s"><div class="pname"><span class="txt">Amplicon_filter_for_SSrep</span><span class="pver">1.0.3</span></div>
+        <div class="badges"><span class="tag s">SSREP</span></div>
+        <div class="note"><b>SSrep only</b> — keep amplicons &gt;1000 reads (other assays: all amplicons)</div></div>
+      <div class="side right"><div class="filelist" data-fn="amplicons"><div class="hd">amplicons BED:</div>
+        <span class="fn s">SSrep_amplicon_v4.5.bed</span></div></div>
+    </div>
+    <div class="row"><div class="down">↓</div></div>
+    <div class="row">
+      <div class="prog c"><div class="pname"><span class="txt">calculate-coverage</span><span class="pver">1.0.1 · shared tool</span></div>
+        <div class="badges"><span class="tag c">ALL</span></div><div class="note">same repo also used by nf_panel</div></div>
+      <div class="side right"><div class="filelist" data-fn="primers"><div class="hd">primers BED → coverage.bed:</div>
+        <span class="fn g">Geno_primers_V5.0.3.bed</span><span class="fn r">RACP1_primers_v1.0.bed</span>
+        <span class="fn r">RACP2_primers_v1.0.bed</span><span class="fn s">SSrep_primers_v4.5.bed</span></div></div>
+    </div>
+    <div class="row"><div class="down">↓</div></div>
+    <div class="row">
+      <div class="side left"><span class="file ref shared" data-fn="fasta"><span class="warn">⚠</span><span class="fn">GIABv1mask.fasta</span></span></div>
+      <div class="prog c dk"><div class="pname"><span class="txt">Pisces</span><span class="pver">5.2.10</span></div>
+        <div class="badges"><span class="tag c">ALL</span></div><div class="note">variant caller</div></div>
+      <div class="side right"><div class="filelist" data-fn="amplicons"><div class="hd">amplicons BED:</div>
+        <span class="fn g">Geno_amplicons_V5.0.3.bed</span><span class="fn r">RACP1_amplicons_v1.0.bed</span>
+        <span class="fn s">SSrep_amplicon_v4.5.bed</span></div></div>
+    </div>
+    <div class="row"><div class="down">↓</div></div>
+    <div class="row">
+      <div class="prog c dk"><div class="pname"><span class="txt">bcftools annotate</span><span class="pver">bcftools-cwl 1.12</span></div>
+        <div class="badges"><span class="tag c">ALL</span></div></div>
+    </div>
+    <div class="row"><div class="down">↓</div></div>
+    <div class="row">
+      <div class="side left"><span class="file ref shared" data-fn="fasta"><span class="warn">⚠</span><span class="fn">GIABv1mask.fasta</span></span></div>
+      <div class="prog c dk"><div class="pname"><span class="txt">GATK VariantAnnotator (low-complexity)</span><span class="pver">gatk 4.6.0.0</span></div>
+        <div class="badges"><span class="tag c">ALL</span></div></div>
+      <div class="side right"><span class="file bed" data-fn="lowcx"><span class="fn">low_complexity_regions_w192_t50_filtered.bed</span></span></div>
+    </div>
+    <div class="row"><div class="down">↓</div></div>
+    <div class="row">
+      <div class="prog r dk"><div class="pname"><span class="txt">False-Positive-Hunter</span><span class="pver">1.0.0</span></div>
+        <div class="badges"><span class="tag r">RACP</span><span class="tag s">SSREP</span></div>
+        <div class="note"><b>RACP &amp; SSrep only</b> (skipped for Genotyping)</div></div>
+    </div>
+    <div class="row"><div class="down">↓</div></div>
+    <div class="row">
+      <div class="side left"><span class="file ref shared" data-fn="fasta"><span class="warn">⚠</span><span class="fn">GIABv1mask.fasta</span></span>
+        <span class="file ref" data-fn="vepcache"><span class="fn">VEP cache</span></span></div>
+      <div class="prog c dk"><div class="pname"><span class="txt">VEP (Ensembl)</span><span class="pver">release_112.0</span></div>
+        <div class="badges"><span class="tag c">ALL</span></div></div>
+    </div>
+    <div class="row"><div class="down">↓</div></div>
+    <div class="row">
+      <div class="prog c dk"><div class="pname"><span class="txt">GATK VariantsToTable</span><span class="pver">gatk 4.1.3.0</span></div>
+        <div class="badges"><span class="tag c">ALL</span></div><div class="note">→ per-sample .table</div></div>
+    </div>
+
+    <div class="stage">Run level — after all samples complete</div>
+    <div class="row">
+      <div class="prog c"><div class="pname"><span class="txt">Genotyping-report-generator</span><span class="pver">1.0.8</span></div>
+        <div class="badges"><span class="tag c">ALL</span></div>
+        <div class="note">name says "Genotyping" but runs for <b>all</b> test types</div></div>
+      <div class="side right"><span class="file bed" data-fn="transcripts"><span class="fn">Amplicon_transcript_IDs_list</span></span></div>
+    </div>
+    <div class="row"><div class="down">↓</div></div>
+    <div class="row">
+      <div class="prog c"><div class="pname"><span class="txt">RACP_bias_read_detector</span><span class="pver">1.0.1</span></div>
+        <div class="badges"><span class="tag c">ALL</span></div>
+        <div class="note">name says "RACP" but runs for <b>all</b> test types → run <b>.report</b></div></div>
+    </div>
+  </div>
+
+  <div class="footer"><b>Shared with nf_panel (change ripples to both pipelines):</b>
+    <span style="font-family:monospace">Homo_sapiens_assembly38.GIABv1mask.fasta</span>,
+    <span style="font-family:monospace">Homo_sapiens_assembly38.known_indels.vcf.gz</span>,
+    <span style="font-family:monospace">Mills_and_1000G_gold_standard.indels.hg38.vcf.gz</span>, and the <b>calculate-coverage</b> tool.</div>
+</section>
+
+<!-- =================== TAB 2: NF_PANEL =================== -->
+<section id="nf" class="pane">
+  <div class="sub">nf_panel v5.0.0 — Nextflow 23.10.0 · WES · aligner bwa-mem.
+  Streams: <span class="tag snv">SNV</span> <span class="tag cnv">CNV</span> <span class="tag sv">SV</span> <span class="tag qc">QC</span> <span class="tag interp">INTERP</span>.
+  <span class="whale wkey"></span> = Docker · <span class="nf">NF</span> = Nextflow.</div>
+  <div class="runby">▶ Run by: auto (the server)</div>
+  <div class="legend">
+    <span class="it"><i class="sw" style="border-color:var(--snv)"></i>SNV (HaplotypeCaller)</span>
+    <span class="it"><i class="sw" style="border-color:var(--cnv)"></i>CNV (ExomeDepth)</span>
+    <span class="it"><i class="sw" style="border-color:var(--sv)"></i>SV (Manta)</span>
+    <span class="it"><i class="sw" style="border-color:var(--qc)"></i>QC</span>
+    <span class="it"><i class="sw" style="border-color:var(--interp)"></i>interpretation</span>
+    <span class="it"><i class="file ref" style="padding:1px 6px">reference / known-sites</i></span>
+    <span class="it"><i class="file bed" style="padding:1px 6px">panel BED</i></span>
+    <span class="it"><i class="file shared" style="padding:1px 6px">⚠ shared with AmpliconPipeline</i></span>
+  </div>
+
+  <div class="flow">
+    <div class="stage">Common entry &amp; dispatch — shared with AmpliconPipeline</div>
+    <div class="row">
+      <div class="side left"><span class="file plain">raw BCL &amp; <span class="fn">SampleSheet.csv</span></span></div>
+      <div class="prog core dk"><div class="pname"><span class="txt">bcl2fq → bcl-convert</span><span class="pver">1.1.15 / 4.3.6</span></div>
+        <div class="badges"><span class="tag core">CORE</span></div><div class="note">BCL → FASTQ</div></div>
+    </div>
+    <div class="row"><div class="down">↓</div></div>
+    <div class="row">
+      <div class="prog core"><div class="pname"><span class="txt">samplesheet</span><span class="pver">1.0.1</span></div>
+        <div class="badges"><span class="tag core">CORE</span></div><div class="note">→ per-sample .vars + input.csv</div></div>
+    </div>
+    <div class="row"><div class="down">↓</div></div>
+    <div class="row">
+      <div class="prog core dk"><div class="pname"><span class="txt">Picard FastqToSam</span><span class="pver">picard 2.26</span></div>
+        <div class="badges"><span class="tag core">CORE</span></div><div class="note">→ uBAM → <b>dispatch</b> by pipeline_name</div></div>
+    </div>
+
+    <div class="stage">nf_panel — variant calling (1_main.sh)</div>
+    <div class="row">
+      <div class="side left">
+        <span class="file ref shared" data-fn="fasta"><span class="warn">⚠</span><span class="fn">GIABv1mask.fasta</span></span>
+        <span class="file ref shared" data-fn="indels"><span class="warn">⚠</span><span class="fn">known_indels + Mills…indels.hg38.vcf.gz</span></span>
+        <span class="file ref" data-fn="dbsnp"><span class="fn">Homo_sapiens_assembly38.dbsnp138.vcf.gz</span></span>
+        <span class="file ref" data-fn="snps"><span class="fn">1000G_phase1.snps.high_confidence.hg38.vcf.gz</span></span>
+      </div>
+      <div class="prog core"><div class="pname"><span class="nf">NF</span><span class="txt">cas-WRGL-sarek (fork nf-core/sarek)</span></div>
+        <div class="badges"><span class="tag snv">SNV</span><span class="tag sv">SV</span></div>
+        <div class="note">bwa-mem → markduplicates → BQSR → HaplotypeCaller + Manta · step: mapping</div></div>
+      <div class="side right"><span class="file bed" data-fn="padded"><span class="fn">WRGL5_hg19_v02.bed_hg38lift_padded.bed</span></span></div>
+    </div>
+    <div class="row"><div class="down">↓</div></div>
+    <div class="row">
+      <div class="prog snv dk"><div class="pname"><span class="txt">GATK VariantFiltration + bcftools view</span><span class="pver">gatk 4.6.0.0 · bcftools 1.7</span></div>
+        <div class="badges"><span class="tag snv">SNV</span></div><div class="note">filter DP&lt;10, restrict to non-padded target</div></div>
+      <div class="side right"><span class="file bed" data-fn="nonpadded"><span class="fn">WRGL5_hg19_v02.bed_hg38lift.bed</span></span></div>
+    </div>
+    <div class="row"><div class="down">↓</div></div>
+    <div class="row">
+      <div class="side left"><span class="file ref" data-fn="snps"><span class="fn">1000G high-confidence SNPs (via GATK SelectVariants)</span></span></div>
+      <div class="prog qc dk"><div class="pname"><span class="txt">verifyBamID — contamination</span><span class="pver">1.1.3</span></div>
+        <div class="badges"><span class="tag qc">QC</span></div><div class="note">per-sample on <span style="font-family:monospace">.recal.bam</span></div></div>
+    </div>
+    <div class="row"><div class="down">↓</div></div>
+    <div class="row">
+      <div class="prog snv dk"><div class="pname"><span class="txt">TYR haplotype — HaplotypeCaller</span><span class="pver">gatk 4.6.0.0</span></div>
+        <div class="badges"><span class="tag snv">SNV</span></div><div class="note">TYR-specific calling</div></div>
+      <div class="side right"><span class="file bed" data-fn="tyr"><span class="fn">TYR_haplotype_interval_hg38lift.bed</span></span></div>
+    </div>
+    <div class="row"><div class="down">↓</div></div>
+    <div class="row">
+      <div class="side left"><span class="file ref shared" data-fn="fasta"><span class="warn">⚠</span><span class="fn">GIABv1mask.fasta</span></span></div>
+      <div class="prog cnv dk"><div class="pname"><span class="txt">ExomeDepth (CNV)</span><span class="pver">r-exomedepth 1.1.16</span></div>
+        <div class="badges"><span class="tag cnv">CNV</span></div><div class="note">script: <span style="font-family:monospace">ExomeDepth/ExomeDepth.r</span></div></div>
+      <div class="side right"><span class="file bed" data-fn="edbed"><span class="fn">WRGL5_hg38_v01_ExomeDepth.bed</span></span></div>
+    </div>
+    <div class="row"><div class="down">↓</div></div>
+    <div class="row">
+      <div class="prog cnv"><div class="pname"><span class="txt">CNV_Panel_Formatting</span><span class="pver">1.0.3</span></div>
+        <div class="badges"><span class="tag cnv">CNV</span></div>
+        <div class="miss">⚠ repo NOT supplied</div>
+        <div class="note">in: input.csv, work_list, ed_scores.tsv</div></div>
+    </div>
+
+    <div class="stage">nf_panel — post-process (2_postprocess.sh)</div>
+    <div class="row">
+      <div class="prog sv dk"><div class="pname"><span class="txt">Manta VCF processing + bcftools</span><span class="pver">bcftools 1.7 · htslib 1.6</span></div>
+        <div class="badges"><span class="tag sv">SV</span></div><div class="note">tag DUP/GAIN, restrict to non-padded → Congenica VCF</div></div>
+    </div>
+    <div class="row"><div class="down">↓</div></div>
+    <div class="row">
+      <div class="prog core dk"><div class="pname"><span class="txt">GATK ValidateVariants</span><span class="pver">gatk 4.6.0.0</span></div>
+        <div class="badges"><span class="tag snv">SNV</span><span class="tag cnv">CNV</span><span class="tag sv">SV</span></div>
+        <div class="note">validate SNV, ExomeDepth and Manta VCFs</div></div>
+    </div>
+    <div class="row"><div class="down">↓</div></div>
+    <div class="row">
+      <div class="prog qc dk"><div class="pname"><span class="txt">coverage gaps — bedtools</span><span class="pver">bedtools 2.22</span></div>
+        <div class="badges"><span class="tag qc">QC</span></div></div>
+      <div class="side right">
+        <span class="file bed" data-fn="htsf"><span class="fn">HTSFAmplicons_hg37_hg38lift.bed</span></span>
+        <span class="file bed" data-fn="nonpadded"><span class="fn">WRGL5_hg19_v02.bed_hg38lift.bed</span></span></div>
+    </div>
+    <div class="row"><div class="down">↓</div></div>
+    <div class="row">
+      <div class="prog qc"><div class="pname"><span class="txt">demographics_identifier</span><span class="pver">1.0.0</span></div>
+        <div class="badges"><span class="tag qc">QC</span></div></div>
+      <div class="side right">
+        <span class="file plain"><span class="fn">work_list.csv</span></span>
+        <span class="file bed" data-fn="subpanels"><span class="fn">WRGL5_genes_and_subpanels_minimumcoverage_v1.1.csv</span></span></div>
+    </div>
+    <div class="row"><div class="down">↓</div></div>
+    <div class="row">
+      <div class="prog core"><div class="pname"><span class="txt">VCFs ready for Congenica</span><span class="pver">output</span></div>
+        <div class="badges"><span class="tag snv">SNV</span><span class="tag cnv">CNV</span><span class="tag sv">SV</span></div></div>
+    </div>
+
+    <div class="stage">Interpretation (Congenica)</div>
+    <div class="row">
+      <div class="side left">
+        <span class="file plain"><span class="fn">*.recal.bam</span></span>
+        <span class="file plain">3 VCFs: <span class="fn">SNV · Manta (SV) · ExomeDepth (CNV)</span></span>
+        <span class="file plain"><span class="fn">sapientia.cfg · sample-to-panel.csv</span></span></div>
+      <div class="prog interp"><div class="pname"><span class="txt">Congenica_Upload_Client</span><span class="pver">sapientia-client 3.7.2.5</span></div>
+        <div class="badges"><span class="tag interp">INTERP</span></div><div class="note">upload BAM/VCF to Congenica (project 12832)</div></div>
+    </div>
+    <div class="row"><div class="down">↓</div></div>
+    <div class="row">
+      <div class="prog interp"><div class="pname"><span class="txt">Congenica platform</span><span class="pver">clinical interpretation</span></div>
+        <div class="badges"><span class="tag interp">INTERP</span></div></div>
+    </div>
+    <div class="row"><div class="down">↓</div></div>
+    <div class="row">
+      <div class="prog interp"><div class="pname"><span class="txt">Congenica-Interpreter-API</span><span class="pver">in-house</span></div>
+        <div class="badges"><span class="tag interp">INTERP</span></div><div class="note">merge Congenica output + worklist → per-patient Excel</div></div>
+      <div class="side right">
+        <span class="file plain"><span class="fn">CongenicaPatient*.csv</span> (Congenica output)</span>
+        <span class="file plain"><span class="fn">worklist.xlsx</span></span>
+        <span class="file bed" data-fn="subpanels"><span class="fn">WRGL5_genes_and_subpanels_minimumcoverage_v1.1.csv</span></span>
+        <span class="file bed" data-fn="ssreproi"><span class="fn">SSrep_ROI_for_APIv4.5.bed</span></span>
+        <span class="file bed" data-fn="htsf"><span class="fn">HTSFAmplicons_hg37_hg38lift.bed</span></span>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer"><b>Shared with AmpliconPipeline:</b>
+    <span style="font-family:monospace">GIABv1mask.fasta</span>,
+    <span style="font-family:monospace">known_indels.vcf.gz</span>,
+    <span style="font-family:monospace">Mills…indels.hg38.vcf.gz</span>, and <b>calculate-coverage</b>.
+    &nbsp;<b>Panel-only:</b> dbSNP138, 1000G SNPs, and the <b>WRGL5</b> BED family (used only here — AmpliconPipeline uses the per-assay Geno/RACP/SSrep BEDs).
+    Submitting variants to ClinVar (congenica2clinvar → clinvar-upload) is done manually — see the <b>Standalone tools</b> tab.</div>
+</section>
+
+<!-- =================== TAB 3: STANDALONE =================== -->
+<section id="std" class="pane">
+  <div class="sub">Programs outside the automated NGS pipelines — run manually / occasionally, or independent services.
+  <span class="whale wkey"></span> = Docker image.</div>
+
+  <div class="stage" style="margin-top:2px">ClinVar submission (run manually)</div>
+  <div class="miniflow">
+    <div class="prog interp"><div class="pname"><span class="txt">congenica2clinvar</span><span class="pver">in-house</span></div>
+      <div class="note">in: <span style="font-family:monospace">CongenicaPatient*.csv</span> (Congenica API) + NHS Test Directory → ClinVar table</div>
+      <div class="owner">Run by: Bioinformatician</div></div>
+    <span class="ar">→</span>
+    <div class="prog interp"><div class="pname"><span class="txt">clinvar-upload</span><span class="pver">in-house</span></div>
+      <div class="note">submit classifications (NHSE GU guidance)</div>
+      <div class="owner">Run by: Bioinformatician</div></div>
+    <span class="ar">→</span>
+    <div class="prog core"><div class="pname"><span class="txt">ClinVar (NCBI)</span></div></div>
+  </div>
+
+  <div class="stage" style="margin-top:6px">Other standalone tools</div>
+  <div class="grid">
+    <div class="scard"><h3>panhaem-cov</h3>
+      <div class="desc">Local QC of coverage for the pan-haem (myeloid / lymphoid) panel — independent of the two NGS pipelines (DRAGEN / Alissa context).</div>
+      <div class="io">in: <span class="fn">pan_HO_edited_coverage…bed</span>, myeloid &amp; lymphoid BEDs · R 4.4 + GATK (Apptainer)</div>
+      <div class="owner">Run by: Bioinformatician</div></div>
+
+    <div class="scard"><h3><span class="whale wcard"></span>MLPA_facilitator_API</h3>
+      <div class="desc">MS-MLPA helper. Turns a GeneMarker batch export into a spreadsheet for clinical scientists. Not NGS.</div>
+      <div class="io">in: GeneMarker export → Excel · Docker (Dockerfile + compose)</div>
+      <div class="owner">Run by: Clinical scientists</div></div>
+
+    <div class="scard"><h3><span class="whale wcard"></span>SpliceAI-lookup_Docker</h3>
+      <div class="desc">Local SpliceAI lookup web service (fork), used on demand to query splice predictions.</div>
+      <div class="io">ref: <span class="fn">preferred_transcript_dataset_for_spliceai_v1.tsv</span> · Docker · port 8001</div>
+      <div class="owner">Run by: Clinical scientists</div></div>
+
+    <div class="scard"><h3><span class="whale wcard"></span>netcopy</h3>
+      <div class="desc">API endpoint to copy data from project space to shared storage.</div>
+      <div class="io">Docker (Dockerfile + compose)</div>
+      <div class="owner">Run by: Bioinformatician — <span style="color:var(--shared)">not operative at the moment (SSD card issue)</span></div></div>
+
+    <div class="scard"><h3>sysad</h3>
+      <div class="desc">Server administration &amp; infrastructure (Ansible, Oracle Linux 8, iDRAC). Not a bioinformatics tool.</div>
+      <div class="io">Ansible playbooks / kickstart</div>
+      <div class="owner">Run by: Bioinformatician</div></div>
+  </div>
+</section>
+
+<script>
+  const WHALE = '<svg viewBox="0 0 48 30" width="22" height="14" aria-label="Docker">'
+    +'<g fill="#2496ED">'
+    +'<rect x="7" y="12" width="6" height="6" rx="1"/><rect x="14" y="12" width="6" height="6" rx="1"/>'
+    +'<rect x="21" y="12" width="6" height="6" rx="1"/><rect x="28" y="12" width="6" height="6" rx="1"/>'
+    +'<rect x="14" y="5" width="6" height="6" rx="1"/><rect x="21" y="5" width="6" height="6" rx="1"/>'
+    +'<path d="M3 19h36c0 5-4 8-9 8H14c-6 0-11-3-11-8z"/></g>'
+    +'<path d="M40 13c2-3 5-3 6 0" stroke="#2496ED" stroke-width="2" fill="none" stroke-linecap="round"/>'
+    +'</svg>';
+  document.querySelectorAll('.wkey,.wcard').forEach(e=>e.innerHTML=WHALE);
+  document.querySelectorAll('.prog.dk .pname').forEach(p=>{
+    const s=document.createElement('span'); s.className='whale'; s.innerHTML=WHALE; p.insertBefore(s,p.firstChild);
+  });
+  // tabs
+  document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{
+    document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+    document.querySelectorAll('.pane').forEach(x=>x.classList.remove('active'));
+    t.classList.add('active');
+    document.getElementById(t.dataset.t).classList.add('active');
+  }));
+  // file highlight (scoped to active pane)
+  document.querySelectorAll('[data-fn]').forEach(f=>f.addEventListener('click',()=>{
+    const fn=f.dataset.fn, on=f.classList.contains('hl');
+    const pane=f.closest('.pane');
+    pane.querySelectorAll('.hl').forEach(e=>e.classList.remove('hl'));
+    if(!on)pane.querySelectorAll('[data-fn="'+fn+'"]').forEach(e=>e.classList.add('hl'));
+  }));
+</script>
+</body>
+</html>
