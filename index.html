@@ -175,7 +175,8 @@
     <div class="row"><div class="down">↓</div></div>
     <div class="row">
       <div class="prog c dk"><div class="pname"><span class="txt">Custom-SoftCliping-app</span><span class="pver">1.2</span></div>
-        <div class="badges"><span class="tag c">ALL</span></div><div class="note">soft-clip primers</div></div>
+        <div class="badges"><span class="tag c">ALL</span></div>
+        <div class="note">soft-clip primers · <a href="https://www.htslib.org/doc/samtools-ampliconclip.html" target="_blank" rel="noopener" style="color:#2496ED;font-weight:600">samtools ampliconclip ↗</a> · <a href="https://github.com/samtools/samtools/issues/1948" target="_blank" rel="noopener" style="color:#2496ED;font-weight:600">why we built our own ↗</a></div></div>
       <div class="side right"><div class="filelist" data-fn="primers"><div class="hd">primers BED (per assay):</div>
         <span class="fn g">Geno_primers_V5.0.3.bed</span><span class="fn r">RACP1_primers_v1.0.bed</span>
         <span class="fn s">SSrep_primers_v4.5.bed</span><span class="fn p">PGX_primers_v2.0.bed</span></div></div>
@@ -517,9 +518,9 @@
     "samtools":"General toolkit to read and organise sequencing files; here it counts and extracts reads.",
     "SamToFastq → NGmerge":"For Genotyping only: merges the two paired reads covering the same DNA fragment into one, improving accuracy.",
     "SamToFastq | bwa mem | MergeBamAlignment":"Aligns each read to its correct position on the human reference genome.",
-    "Custom-SoftCliping-app":"Trims the PCR primer sequence off the reads so primers don't create false variants.",
+    "Custom-SoftCliping-app":"Trims the PCR primer sequence off the reads so primers don't create false variants. We built our own because samtools ampliconclip cannot soft-clip these regions when amplicons overlap — confirmed with the samtools developer (see the links on the box).",
     "reduce_reads_in_amplicons":"Caps very high read numbers per amplicon to speed up analysis without losing accuracy.",
-    "GATK3 IndelRealigner":"Re-aligns reads around insertions/deletions so those variants are detected correctly.",
+    "GATK3 IndelRealigner":"Re-aligns reads around insertions/deletions so those variants are detected correctly. We use GATK3 because GATK4 dropped this tool — it was merged into the HaplotypeCaller variant caller, which we don't use.",
     "Amplicon_filter_for_SSrep":"SSrep only: builds a list of the amplicons with more than 1,000 reads. Those amplicon names are then used later to get an exact annotation.",
     "calculate-coverage":"Measures how well each region is covered by reads (depth) and flags any gaps.",
     "Pisces":"Detects the genetic variants — the differences from the reference genome — in each sample.",
