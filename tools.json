@@ -1,0 +1,21 @@
+{
+  "_comment": "Maps each in-house program shown in index.html to its GitHub repo. The Action reads the latest release/tag of each repo and writes the version into index.html. IMPORTANT: fix 'repo' to the exact owner/name of each PRIVATE repo (guessed from the READMEs). 'where'=pname updates the version pill; 'where'=header updates the tab title version. 'suffix' keeps trailing text after the version.",
+  "tools": [
+    { "name": "AmpliconPipeline",            "repo": "cas-wrgl/AmpliconPipeline",            "where": "header" },
+    { "name": "nf_panel",                     "repo": "cas-wrgl/nf_panel",                    "where": "header" },
+    { "name": "bcl2fq → bcl-convert",         "repo": "cas-wrgl/bcl2fq",                      "where": "pname", "suffix": " / 4.3.6" },
+    { "name": "samplesheet",                  "repo": "cas-wrgl/samplesheet",                 "where": "pname" },
+    { "name": "Custom-SoftCliping-app",       "repo": "cas-wrgl/Custom-SoftCliping-app",      "where": "pname" },
+    { "name": "reduce_reads_in_amplicons",    "repo": "cas-wrgl/reduce_reads_in_amplicons",   "where": "pname" },
+    { "name": "Amplicon_filter_for_SSrep",    "repo": "cas-wrgl/Amplicon_filter_for_SSrep-",  "where": "pname" },
+    { "name": "calculate-coverage",           "repo": "cas-wrgl/calculate-coverage",          "where": "pname", "suffix": " · shared tool" },
+    { "name": "False-Positive-Hunter",        "repo": "cas-wrgl/False-Positive-Hunter",       "where": "pname" },
+    { "name": "Genotyping-report-generator",  "repo": "cas-wrgl/Genotyping-report-generator", "where": "pname" },
+    { "name": "RACP_bias_read_detector",      "repo": "cas-wrgl/RACP_bias_read_detector",     "where": "pname" },
+    { "name": "demographics_identifier",      "repo": "cas-wrgl/demographics_identifier",     "where": "pname" },
+    { "name": "CNV_Panel_Formatting",         "repo": "cas-wrgl/CNV_Panel_Formatting",        "where": "pname" },
+    { "name": "Congenica-Interpreter-API",    "repo": "cas-wrgl/Congenica-Interpreter-API",   "where": "pname" },
+    { "name": "congenica2clinvar",            "repo": "cas-wrgl/congenica2clinvar",           "where": "pname" },
+    { "name": "clinvar-upload",               "repo": "casglh/clinvar-upload",                "where": "pname" }
+  ]
+}

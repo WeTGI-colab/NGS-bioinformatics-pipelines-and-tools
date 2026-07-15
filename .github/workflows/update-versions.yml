@@ -1,0 +1,39 @@
+name: Update tool versions
+
+# Runs weekly and on-demand. Reads the latest release/tag of each repo in
+# tools.json and updates the version numbers in index.html, then commits.
+
+on:
+  schedule:
+    - cron: "0 6 * * 1"      # every Monday 06:00 UTC
+  workflow_dispatch:          # lets you run it manually from the Actions tab
+
+permissions:
+  contents: write             # allows the job to push the updated index.html
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Update versions from repo tags
+        env:
+          TOOLS_TOKEN: ${{ secrets.TOOLS_TOKEN }}   # PAT with read access to the private tool repos
+        run: python scripts/update_versions.py
+
+      - name: Commit if changed
+        run: |
+          if [ -n "$(git status --porcelain index.html)" ]; then
+            git config user.name  "version-bot"
+            git config user.email "actions@users.noreply.github.com"
+            git add index.html
+            git commit -m "Auto-update tool versions from repo tags"
+            git push
+          else
+            echo "No version changes."
+          fi
