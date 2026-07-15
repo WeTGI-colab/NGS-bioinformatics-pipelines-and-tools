@@ -393,7 +393,9 @@
     <div class="row">
       <div class="side left">
         <span class="file plain"><span class="fn">*.recal.bam</span></span>
-        <span class="file plain">3 VCFs: <span class="fn">SNV · Manta (SV) · ExomeDepth (CNV)</span></span>
+        <span class="file plain"><span class="fn">&lt;sample&gt;_haplotypecaller_filtered.vcf</span></span>
+        <span class="file plain"><span class="fn">&lt;sample&gt;-recal_cnv.vcf</span></span>
+        <span class="file plain"><span class="fn">&lt;sample&gt;_manta_diploid_sv_congenica.vcf</span></span>
         <span class="file plain"><span class="fn">sapientia.cfg · sample-to-panel.csv</span></span></div>
       <div class="prog interp"><div class="pname"><span class="txt">Congenica_Upload_Client</span><span class="pver">sapientia-client 3.7.2.5</span></div>
         <div class="badges"><span class="tag interp">INTERP</span></div><div class="note">upload BAM/VCF to Congenica (project 12832)</div></div>
@@ -557,7 +559,9 @@
     "InterOp (Illumina)":"Reads run-level quality metrics directly from the sequencer's output (e.g. Q30, cluster density, % reads passing filter)."
   };
   const TIPS_FILE = [
-    ["3 VCFs","The three kinds of variant results uploaded for interpretation: SNV = small single-base changes and small insertions/deletions (from HaplotypeCaller); Manta (SV) = large structural rearrangements; ExomeDepth (CNV) = gains or losses of whole genes (copy-number)."],
+    ["haplotypecaller_filtered","SNV VCF — small single-base changes and small insertions/deletions (from HaplotypeCaller)."],
+    ["recal_cnv","CNV VCF — gains or losses of whole genes / copy-number changes (from ExomeDepth)."],
+    ["manta_diploid_sv","SV VCF — large structural rearrangements (from Manta)."],
     ["GIABv1mask","The human reference genome — the 'map' every read is compared against."],
     ["known_indels","Catalogue of known insertions/deletions, used to improve alignment and calibration."],
     ["Mills","Catalogue of known insertions/deletions, used to improve alignment and calibration."],
