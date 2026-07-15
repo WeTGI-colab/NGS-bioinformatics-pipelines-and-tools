@@ -473,6 +473,11 @@
       <div class="desc">Automated QC-trend tracking across run, sample and variant levels (Interop, FastQC/MultiQC, horizontal coverage, VCF metrics) plus PanHaem and Oncology plots. Two-step: archive monthly data → plot trends.</div>
       <div class="io">conda env <span class="fn">qc_env</span> · Python (setup.py)</div>
       <div class="owner">Run by: Bioinformatician</div></div>
+
+    <div class="scard"><h3><span class="whale wcard"></span>InterOp (Illumina)</h3>
+      <div class="desc">Reads run-level quality metrics straight from the sequencer's output — e.g. Q30, cluster density, % reads passing filter. Provided as a shell function in the sysad toolkit.</div>
+      <div class="io">illumina-interop 1.3.2 · e.g. <span class="fn">interop summary /mnt/data1/raw/&lt;run&gt;</span></div>
+      <div class="owner">Run by: Bioinformatician</div></div>
   </div>
 </section>
 
@@ -547,7 +552,8 @@
     "SpliceAI-lookup_Docker":"On-demand tool to check whether a variant is predicted to affect splicing.",
     "netcopy":"Copies run data from the working area to shared storage.",
     "sysad":"Server administration and infrastructure — not a bioinformatics analysis tool.",
-    "QM_trends_tool":"Tracks quality-control trends over time across runs, samples and variants."
+    "QM_trends_tool":"Tracks quality-control trends over time across runs, samples and variants.",
+    "InterOp (Illumina)":"Reads run-level quality metrics directly from the sequencer's output (e.g. Q30, cluster density, % reads passing filter)."
   };
   const TIPS_FILE = [
     ["3 VCFs","The three kinds of variant results uploaded for interpretation: SNV = small single-base changes and small insertions/deletions (from HaplotypeCaller); Manta (SV) = large structural rearrangements; ExomeDepth (CNV) = gains or losses of whole genes (copy-number)."],
