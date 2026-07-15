@@ -7,7 +7,7 @@
 <style>
   :root{
     --ink:#1a1a2e; --muted:#5b6470; --line:#c9d2de; --bg:#fff;
-    --geno:#2f8f4e; --racp:#2f6db0; --ssrep:#d98a2b; --common:#8a93a0;
+    --geno:#2f8f4e; --racp:#2f6db0; --ssrep:#d98a2b; --pgx:#0d9488; --common:#8a93a0;
     --core:#5b6470; --snv:#2f6db0; --cnv:#8e44ad; --sv:#2a9d8f; --qc:#b08900; --interp:#d0743a;
     --shared:#c0392b; --panelbed:#8e44ad; --ref:#b7791f;
   }
@@ -30,7 +30,7 @@
   .legend span.it{display:inline-flex;align-items:center;gap:6px;padding:3px 9px;border-radius:20px;border:1px solid var(--line)}
   .sw{width:20px;height:0;border-top:3px solid;display:inline-block;border-radius:2px}
   .tag{display:inline-block;font-size:9.5px;font-weight:700;color:#fff;border-radius:4px;padding:1px 5px;letter-spacing:.3px}
-  .tag.g{background:var(--geno)} .tag.r{background:var(--racp)} .tag.s{background:var(--ssrep)} .tag.c{background:var(--common)}
+  .tag.g{background:var(--geno)} .tag.r{background:var(--racp)} .tag.s{background:var(--ssrep)} .tag.p{background:var(--pgx)} .tag.c{background:var(--common)}
   .tag.core{background:var(--core)} .tag.snv{background:var(--snv)} .tag.cnv{background:var(--cnv)}
   .tag.sv{background:var(--sv)} .tag.qc{background:var(--qc)} .tag.interp{background:var(--interp)}
 
@@ -39,7 +39,7 @@
   .prog{grid-column:2;justify-self:center;width:320px;background:#fff;border:1.5px solid var(--line);
         border-left:6px solid var(--common);border-radius:10px;padding:9px 12px;box-shadow:0 1px 3px rgba(20,30,50,.06)}
   .prog.g{border-left-color:var(--geno)} .prog.r{border-left-color:var(--racp)}
-  .prog.s{border-left-color:var(--ssrep)} .prog.c{border-left-color:var(--common)}
+  .prog.s{border-left-color:var(--ssrep)} .prog.p{border-left-color:var(--pgx)} .prog.c{border-left-color:var(--common)}
   .prog.core{border-left-color:var(--core)} .prog.snv{border-left-color:var(--snv)}
   .prog.cnv{border-left-color:var(--cnv)} .prog.sv{border-left-color:var(--sv)}
   .prog.qc{border-left-color:var(--qc)} .prog.interp{border-left-color:var(--interp)}
@@ -69,7 +69,7 @@
             padding:5px 10px;max-width:300px;cursor:pointer}
   .filelist .hd{color:var(--muted);margin-bottom:3px}
   .filelist .fn{display:block;font-family:ui-monospace,Menlo,monospace;font-size:10px;padding:1px 0;font-weight:600}
-  .filelist .fn.g{color:var(--geno)} .filelist .fn.r{color:var(--racp)} .filelist .fn.s{color:var(--ssrep)}
+  .filelist .fn.g{color:var(--geno)} .filelist .fn.r{color:var(--racp)} .filelist .fn.s{color:var(--ssrep)} .filelist .fn.p{color:var(--pgx)}
 
   .down{grid-column:2;justify-self:center;color:#aab2bd;font-size:16px;line-height:1;margin:2px 0}
   .stage{grid-column:1 / -1;text-align:center;font-size:11px;color:var(--muted);
@@ -124,7 +124,7 @@
 <section id="ap" class="pane active">
   <div class="sub">AmpliconPipeline v1.0.29 — bash + SLURM + Apptainer, one job per sample.
   Central column = programs (version); files enter at the step where they are used.
-  Assays: <span class="tag g">GENO</span> Genotyping · <span class="tag r">RACP</span> RACP1/2 · <span class="tag s">SSREP</span> SSrep · <span class="tag c">ALL</span> common.
+  Assays: <span class="tag g">GENO</span> Genotyping · <span class="tag r">RACP</span> RACP1 · <span class="tag s">SSREP</span> SSrep · <span class="tag p">PGX</span> PGX (in validation, not yet in production) · <span class="tag c">ALL</span> common.
   <span class="whale wkey"></span> = Docker image.</div>
   <div class="runby">▶ Run by: auto (the server)</div>
   <div class="legend">
@@ -134,7 +134,7 @@
     <span class="it"><i class="sw" style="border-color:var(--common)"></i>common</span>
     <span class="it"><i class="file ref" style="padding:1px 6px">reference / known-sites</i></span>
     <span class="it"><i class="file bed" style="padding:1px 6px">per-panel BED</i></span>
-    <span class="it"><i class="file shared" style="padding:1px 6px">⚠ shared with nf_panel</i></span>
+    <span class="it"><i class="file shared" style="padding:1px 6px">shared with nf_panel</i></span>
   </div>
 
   <div class="flow">
@@ -168,7 +168,7 @@
     </div>
     <div class="row"><div class="down">↓</div></div>
     <div class="row">
-      <div class="side left"><span class="file ref shared" data-fn="fasta"><span class="warn">⚠</span><span class="fn">Homo_sapiens_assembly38.GIABv1mask.fasta</span></span></div>
+      <div class="side left"><span class="file ref shared" data-fn="fasta"><span class="fn">Homo_sapiens_assembly38.GIABv1mask.fasta</span></span></div>
       <div class="prog c dk"><div class="pname"><span class="txt">SamToFastq | bwa mem | MergeBamAlignment</span><span class="pver">bwa 0.7.18 · picard 3.1.1</span></div>
         <div class="badges"><span class="tag c">ALL</span></div><div class="note">alignment to reference genome</div></div>
     </div>
@@ -178,7 +178,7 @@
         <div class="badges"><span class="tag c">ALL</span></div><div class="note">soft-clip primers</div></div>
       <div class="side right"><div class="filelist" data-fn="primers"><div class="hd">primers BED (per assay):</div>
         <span class="fn g">Geno_primers_V5.0.3.bed</span><span class="fn r">RACP1_primers_v1.0.bed</span>
-        <span class="fn r">RACP2_primers_v1.0.bed</span><span class="fn s">SSrep_primers_v4.5.bed</span></div></div>
+        <span class="fn s">SSrep_primers_v4.5.bed</span><span class="fn p">PGX_primers_v2.0.bed</span></div></div>
     </div>
     <div class="row"><div class="down">↓</div></div>
     <div class="row">
@@ -188,14 +188,14 @@
     <div class="row"><div class="down">↓</div></div>
     <div class="row">
       <div class="side left">
-        <span class="file ref shared" data-fn="indels"><span class="warn">⚠</span><span class="fn">Homo_sapiens_assembly38.known_indels.vcf.gz</span></span>
-        <span class="file ref shared" data-fn="indels"><span class="warn">⚠</span><span class="fn">Mills_and_1000G_gold_standard.indels.hg38.vcf.gz</span></span>
+        <span class="file ref shared" data-fn="indels"><span class="fn">Homo_sapiens_assembly38.known_indels.vcf.gz</span></span>
+        <span class="file ref shared" data-fn="indels"><span class="fn">Mills_and_1000G_gold_standard.indels.hg38.vcf.gz</span></span>
       </div>
       <div class="prog c dk"><div class="pname"><span class="txt">GATK3 IndelRealigner</span><span class="pver">gatk-3 3.8-0</span></div>
         <div class="badges"><span class="tag c">ALL</span></div></div>
       <div class="side right"><div class="filelist" data-fn="amplicons"><div class="hd">amplicons BED (per assay):</div>
         <span class="fn g">Geno_amplicons_V5.0.3.bed</span><span class="fn r">RACP1_amplicons_v1.0.bed</span>
-        <span class="fn s">SSrep_amplicon_v4.5.bed</span></div></div>
+        <span class="fn s">SSrep_amplicon_v4.5.bed</span><span class="fn p">PGX_amplicons_v2.0.bed</span></div></div>
     </div>
     <div class="row"><div class="down">↓</div></div>
     <div class="row">
@@ -211,16 +211,16 @@
         <div class="badges"><span class="tag c">ALL</span></div><div class="note">same repo also used by nf_panel</div></div>
       <div class="side right"><div class="filelist" data-fn="primers"><div class="hd">primers BED → coverage.bed:</div>
         <span class="fn g">Geno_primers_V5.0.3.bed</span><span class="fn r">RACP1_primers_v1.0.bed</span>
-        <span class="fn r">RACP2_primers_v1.0.bed</span><span class="fn s">SSrep_primers_v4.5.bed</span></div></div>
+        <span class="fn s">SSrep_primers_v4.5.bed</span><span class="fn p">PGX_primers_v2.0.bed</span></div></div>
     </div>
     <div class="row"><div class="down">↓</div></div>
     <div class="row">
-      <div class="side left"><span class="file ref shared" data-fn="fasta"><span class="warn">⚠</span><span class="fn">GIABv1mask.fasta</span></span></div>
+      <div class="side left"><span class="file ref shared" data-fn="fasta"><span class="fn">GIABv1mask.fasta</span></span></div>
       <div class="prog c dk"><div class="pname"><span class="txt">Pisces</span><span class="pver">5.2.10</span></div>
         <div class="badges"><span class="tag c">ALL</span></div><div class="note">variant caller</div></div>
       <div class="side right"><div class="filelist" data-fn="amplicons"><div class="hd">amplicons BED:</div>
         <span class="fn g">Geno_amplicons_V5.0.3.bed</span><span class="fn r">RACP1_amplicons_v1.0.bed</span>
-        <span class="fn s">SSrep_amplicon_v4.5.bed</span></div></div>
+        <span class="fn s">SSrep_amplicon_v4.5.bed</span><span class="fn p">PGX_amplicons_v2.0.bed</span></div></div>
     </div>
     <div class="row"><div class="down">↓</div></div>
     <div class="row">
@@ -229,7 +229,7 @@
     </div>
     <div class="row"><div class="down">↓</div></div>
     <div class="row">
-      <div class="side left"><span class="file ref shared" data-fn="fasta"><span class="warn">⚠</span><span class="fn">GIABv1mask.fasta</span></span></div>
+      <div class="side left"><span class="file ref shared" data-fn="fasta"><span class="fn">GIABv1mask.fasta</span></span></div>
       <div class="prog c dk"><div class="pname"><span class="txt">GATK VariantAnnotator (low-complexity)</span><span class="pver">gatk 4.6.0.0</span></div>
         <div class="badges"><span class="tag c">ALL</span></div></div>
       <div class="side right"><span class="file bed" data-fn="lowcx"><span class="fn">low_complexity_regions_w192_t50_filtered.bed</span></span></div>
@@ -237,12 +237,12 @@
     <div class="row"><div class="down">↓</div></div>
     <div class="row">
       <div class="prog r dk"><div class="pname"><span class="txt">False-Positive-Hunter</span><span class="pver">1.0.0</span></div>
-        <div class="badges"><span class="tag r">RACP</span><span class="tag s">SSREP</span></div>
-        <div class="note"><b>RACP &amp; SSrep only</b> (skipped for Genotyping)</div></div>
+        <div class="badges"><span class="tag r">RACP</span><span class="tag s">SSREP</span><span class="tag p">PGX</span></div>
+        <div class="note"><b>Everything except Genotyping</b> (RACP, SSrep, PGX)</div></div>
     </div>
     <div class="row"><div class="down">↓</div></div>
     <div class="row">
-      <div class="side left"><span class="file ref shared" data-fn="fasta"><span class="warn">⚠</span><span class="fn">GIABv1mask.fasta</span></span>
+      <div class="side left"><span class="file ref shared" data-fn="fasta"><span class="fn">GIABv1mask.fasta</span></span>
         <span class="file ref" data-fn="vepcache"><span class="fn">VEP cache</span></span></div>
       <div class="prog c dk"><div class="pname"><span class="txt">VEP (Ensembl)</span><span class="pver">release_112.0</span></div>
         <div class="badges"><span class="tag c">ALL</span></div></div>
@@ -288,7 +288,7 @@
     <span class="it"><i class="sw" style="border-color:var(--interp)"></i>interpretation</span>
     <span class="it"><i class="file ref" style="padding:1px 6px">reference / known-sites</i></span>
     <span class="it"><i class="file bed" style="padding:1px 6px">panel BED</i></span>
-    <span class="it"><i class="file shared" style="padding:1px 6px">⚠ shared with AmpliconPipeline</i></span>
+    <span class="it"><i class="file shared" style="padding:1px 6px">shared with AmpliconPipeline</i></span>
   </div>
 
   <div class="flow">
@@ -312,8 +312,8 @@
     <div class="stage">nf_panel — variant calling (1_main.sh)</div>
     <div class="row">
       <div class="side left">
-        <span class="file ref shared" data-fn="fasta"><span class="warn">⚠</span><span class="fn">GIABv1mask.fasta</span></span>
-        <span class="file ref shared" data-fn="indels"><span class="warn">⚠</span><span class="fn">known_indels + Mills…indels.hg38.vcf.gz</span></span>
+        <span class="file ref shared" data-fn="fasta"><span class="fn">GIABv1mask.fasta</span></span>
+        <span class="file ref shared" data-fn="indels"><span class="fn">known_indels + Mills…indels.hg38.vcf.gz</span></span>
         <span class="file ref" data-fn="dbsnp"><span class="fn">Homo_sapiens_assembly38.dbsnp138.vcf.gz</span></span>
         <span class="file ref" data-fn="snps"><span class="fn">1000G_phase1.snps.high_confidence.hg38.vcf.gz</span></span>
       </div>
@@ -332,7 +332,7 @@
     <div class="row">
       <div class="side left"><span class="file ref" data-fn="snps"><span class="fn">1000G high-confidence SNPs (via GATK SelectVariants)</span></span></div>
       <div class="prog qc dk"><div class="pname"><span class="txt">verifyBamID — contamination</span><span class="pver">1.1.3</span></div>
-        <div class="badges"><span class="tag qc">QC</span></div><div class="note">per-sample on <span style="font-family:monospace">.recal.bam</span></div></div>
+        <div class="badges"><span class="tag qc">QC</span></div><div class="note">per-sample on <span style="font-family:monospace">.recal.bam</span> · <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC3487130/" target="_blank" rel="noopener" style="color:#2496ED;font-weight:600">paper ↗</a></div></div>
     </div>
     <div class="row"><div class="down">↓</div></div>
     <div class="row">
@@ -342,7 +342,7 @@
     </div>
     <div class="row"><div class="down">↓</div></div>
     <div class="row">
-      <div class="side left"><span class="file ref shared" data-fn="fasta"><span class="warn">⚠</span><span class="fn">GIABv1mask.fasta</span></span></div>
+      <div class="side left"><span class="file ref shared" data-fn="fasta"><span class="fn">GIABv1mask.fasta</span></span></div>
       <div class="prog cnv dk"><div class="pname"><span class="txt">ExomeDepth (CNV)</span><span class="pver">r-exomedepth 1.1.16</span></div>
         <div class="badges"><span class="tag cnv">CNV</span></div><div class="note">script: <span style="font-family:monospace">ExomeDepth/ExomeDepth.r</span></div></div>
       <div class="side right"><span class="file bed" data-fn="edbed"><span class="fn">WRGL5_hg38_v01_ExomeDepth.bed</span></span></div>
@@ -506,7 +506,7 @@
 
   /* ===== hover explanations (plain, for scientists) ===== */
   const TIPS_PROG = {
-    "bcl2fq → bcl-convert":"Turns the sequencer's raw signal files into readable DNA sequences (FASTQ files).",
+    "bcl2fq → bcl-convert":"A scheduled job (Cron) on the server checks every 5 minutes for new sequencing runs and triggers this step. It converts the sequencer's raw signal into readable DNA sequences (FASTQ) and reads the sample sheet, which tells the system which pipeline to run.",
     "samplesheet":"Reads the run's sample sheet and prepares the per-sample settings the analysis needs.",
     "Picard FastqToSam":"Packages each sample's raw reads into a standard file, ready for analysis.",
     "samtools":"General toolkit to read and organise sequencing files; here it counts and extracts reads.",
@@ -515,7 +515,7 @@
     "Custom-SoftCliping-app":"Trims the PCR primer sequence off the reads so primers don't create false variants.",
     "reduce_reads_in_amplicons":"Caps very high read numbers per amplicon to speed up analysis without losing accuracy.",
     "GATK3 IndelRealigner":"Re-aligns reads around insertions/deletions so those variants are detected correctly.",
-    "Amplicon_filter_for_SSrep":"SSrep only: keeps just the amplicons that have enough reads to be reliable.",
+    "Amplicon_filter_for_SSrep":"SSrep only: builds a list of the amplicons with more than 1,000 reads. Those amplicon names are then used later to get an exact annotation.",
     "calculate-coverage":"Measures how well each region is covered by reads (depth) and flags any gaps.",
     "Pisces":"Detects the genetic variants — the differences from the reference genome — in each sample.",
     "bcftools annotate":"Adds extra information and labels to the list of detected variants.",
@@ -565,7 +565,7 @@
     ["genes_and_subpanels","Gene and sub-panel list with the minimum coverage each must reach."],
     ["SSrep_ROI","The SSrep regions of interest."],
     ["low_complexity","Repetitive genome regions where sequencing errors are common."],
-    ["transcript","The preferred gene transcripts to report results against."],
+    ["transcript","Used to pull the annotation and the mutations that fall in our transcripts; these go into the .report file that is given to the geneticists."],
     ["primers BED","Coordinates of the PCR primers — used to trim primer sequence off the reads."],
     ["amplicons BED","Coordinates of the amplicons (the target DNA regions) for this test."],
     ["SampleSheet","The run's sample sheet from the sequencer."],
