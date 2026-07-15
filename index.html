@@ -95,10 +95,19 @@
          background:#e8f6ee;border:1px solid #9ed6b6;border-radius:20px;padding:4px 12px;margin-bottom:14px}
   .owner{font-size:11px;font-weight:600;color:#5a4a00;background:#fdf6e3;border:1px solid #e5d089;
          border-radius:6px;padding:3px 8px;margin-top:8px;display:inline-block}
+  .pending{display:flex;align-items:center;justify-content:center;gap:12px;
+           background:#fdeaea;border:2px solid #c0392b;color:#c0392b;font-weight:800;
+           font-size:22px;letter-spacing:1.5px;text-transform:uppercase;
+           border-radius:10px;padding:11px 16px;max-width:1080px;margin:0 auto 16px}
+  .pending .dotr{width:13px;height:13px;border-radius:50%;background:#c0392b;display:inline-block;
+           animation:blink 1.2s infinite}
+  @keyframes blink{50%{opacity:.2}}
 </style>
 </head>
 <body>
 <h1>WGLS Bioinformatics — workflows <small>versions &amp; input files · click a file to trace every step that uses it</small></h1>
+
+<div class="pending"><span class="dotr"></span>Pending review — not yet validated<span class="dotr"></span></div>
 
 <div class="tabs">
   <button class="tab active" data-t="ap">AmpliconPipeline</button>
@@ -453,6 +462,11 @@
     <div class="scard"><h3>sysad</h3>
       <div class="desc">Server administration &amp; infrastructure (Ansible, Oracle Linux 8, iDRAC). Not a bioinformatics tool.</div>
       <div class="io">Ansible playbooks / kickstart</div>
+      <div class="owner">Run by: Bioinformatician</div></div>
+
+    <div class="scard"><h3>QM_trends_tool</h3>
+      <div class="desc">Automated QC-trend tracking across run, sample and variant levels (Interop, FastQC/MultiQC, horizontal coverage, VCF metrics) plus PanHaem and Oncology plots. Two-step: archive monthly data → plot trends.</div>
+      <div class="io">conda env <span class="fn">qc_env</span> · Python (setup.py)</div>
       <div class="owner">Run by: Bioinformatician</div></div>
   </div>
 </section>
